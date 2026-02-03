@@ -1,41 +1,45 @@
 import express from 'express';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 const app = express();
 app.use(express.json());
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.get('/', (req, res) => {
   res.send('FluxoStart Email Service OK');
 });
 
 app.post('/enviar-confirmacao', async (req, res) => {
-  console.log('REQ BODY:', req.body);
+  try {
+    console.log('REQ BODY:', req.body);
 
-  const { email, nome, token } = req.body;
+    const { email, nome, token } = req.body;
 
-  if (!email || !token) {
-    return res.status(400).json({ error: 'Dados inválidos' });
-  }
-
-  const link = `https://fluxostart.infinityfreeapp.com/backend/confirmar.php?token=${token}`;
-
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
+    if (!email || !token) {
+      return res.status(400).json({ error: 'Dados inválidos' });
     }
-  });
 
-  await transporter.sendMail({
-    from: 'FluxoStart <no-reply@fluxostart.com>',
-    to: email,
-    subject: 'Confirme seu cadastro',
-    text: `Olá ${nome}, confirme aqui: ${link}`,
-    html: `<p>Olá ${nome},</p><p><a href="${link}">Confirmar cadastro</a></p>`
-  });
+    //link deve ser atualizado quando o host sofrer upgrade
+    const link = `https://fluxostart.infinityfreeapp.com/backend/confirmar.php?token=${token}`;
 
-  res.json({ success: true });
+    await resend.emails.send({
+      from: 'FluxoStart <onboarding@resend.dev>',
+      to: email,
+      subject: 'Confirme seu cadastro no FluxoStart',
+      html: `
+        <p>Olá <strong>${nome}</strong>,</p>
+        <p>Para confirmar seu cadastro, clique no link abaixo:</p>
+        <p><a href="${link}">Confirmar cadastro</a></p>
+        <p>Se você não solicitou este cadastro, ignore este e-mail.</p>
+      `
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('ERRO AO ENVIAR EMAIL:', error);
+    res.status(500).json({ error: 'Erro ao enviar e-mail' });
+  }
 });
 
 app.listen(10000, () => {
