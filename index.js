@@ -23,9 +23,9 @@ app.post('/enviar-confirmacao', async (req, res) => {
     //link deve ser atualizado quando o host sofrer upgrade
     const link = `https://fluxostart.infinityfreeapp.com/backend/confirmar.php?token=${token}`;
 
-    await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: 'FluxoStart <onboarding@resend.dev>',
-      to: email,
+      to: [email], // 👈 IMPORTANTE: array
       subject: 'Confirme seu cadastro no FluxoStart',
       html: `
         <p>Olá <strong>${nome}</strong>,</p>
@@ -34,6 +34,14 @@ app.post('/enviar-confirmacao', async (req, res) => {
         <p>Se você não solicitou este cadastro, ignore este e-mail.</p>
       `
     });
+
+    console.log('RESEND DATA:', data);
+    console.log('RESEND ERROR:', error);
+
+    if (error) {
+      return res.status(500).json({ error });
+    }
+
 
     res.json({ success: true });
   } catch (error) {
