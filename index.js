@@ -24,7 +24,7 @@ app.post('/enviar-confirmacao', async (req, res) => {
     const link = `https://fluxostart.infinityfreeapp.com/backend/confirmar.php?token=${token}`;
 
     const { data, error } = await resend.emails.send({
-      from: 'FluxoStart <no-reply@fluxostart.online',
+      from: 'FluxoStart <no-reply@fluxostart.online>',
       to: [email], // 👈 IMPORTANTE: array
       subject: 'Confirme seu cadastro no FluxoStart',
       html: `
