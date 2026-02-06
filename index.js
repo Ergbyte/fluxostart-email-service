@@ -21,7 +21,7 @@ app.post('/enviar-confirmacao', async (req, res) => {
     }
 
     //link deve ser atualizado quando o host sofrer upgrade
-    const link = `https://fluxostart.infinityfreeapp.com/backend/confirmar.php?token=${token}`;
+    const link = `https://fluxostart.infinityfreeapp.com/backend/validar_credenciais.php?token=${token}`;
 
     const { data, error } = await resend.emails.send({
       from: 'FluxoStart <no-reply@fluxostart.online>',
